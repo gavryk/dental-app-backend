@@ -3,7 +3,7 @@ const { Appointment } = require("../models");
 
 function AppointmentController() {}
 
-const create = function (req, res) {
+const create = async function (req, res) {
   const errors = validationResult(req);
   const data = {
     patient: req.body.patient,
@@ -18,6 +18,15 @@ const create = function (req, res) {
     return res.status(422).json({
       success: false,
       message: errors.array(),
+    });
+  }
+
+  try {
+    patient = await Patient.findOne({ _id: data.patient });
+  } catch (e) {
+    return res.status(404).json({
+      success: false,
+      message: 'PATIENT_NOT_FOUND',
     });
   }
 
@@ -37,7 +46,9 @@ const create = function (req, res) {
 };
 
 const all = function (req, res) {
-  Appointment.find({}, function (err, docs) {
+  Appointment.find({})
+    .populate('patient')
+    .exec(function (err, docs) {
     if (err) {
       return res.status(500).json({
         success: false,
