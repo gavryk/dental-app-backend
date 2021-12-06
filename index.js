@@ -12,6 +12,9 @@ app.use(cors());
 //PATIENTS
 app.get('/patients', PatientCtrl.all);
 app.post('/patients', patientValidation.create, PatientCtrl.create);
+app.patch('/patients/:id', patientValidation.create, PatientCtrl.update);
+app.delete('/patients/:id', PatientCtrl.remove);
+app.get('/patients/:id', PatientCtrl.show);
 
 //APPOINTMENTS
 app.get('/appointments', AppointmentCtrl.all);
