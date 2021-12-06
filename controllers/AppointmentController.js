@@ -1,6 +1,10 @@
 const { validationResult } = require("express-validator");
 const { Appointment, Patient } = require("../models");
 
+const dayjs = require('dayjs');
+const ruLocale = require('dayjs/locale/ru');
+const { groupBy, reduce } = require('lodash');
+
 function AppointmentController() {}
 
 const create = async function (req, res) {
@@ -37,6 +41,13 @@ const create = async function (req, res) {
         message: err,
       });
     }
+    
+    const delayedTime = dayjs(
+      `${data.date
+        .split('.')
+        .reverse()
+        .join('.')}T${data.time}`,
+    )
 
     res.status(201).json({
       success: true,
@@ -115,10 +126,10 @@ const remove = async function (req, res) {
   });
 };
 
-const all = function (req, res) {
+const all = function(req, res) {
   Appointment.find({})
-    .populate("patient")
-    .exec(function (err, docs) {
+    .populate('patient')
+    .exec(function(err, docs) {
       if (err) {
         return res.status(500).json({
           success: false,
@@ -127,8 +138,22 @@ const all = function (req, res) {
       }
 
       res.json({
-        status: "succces",
-        data: docs,
+        status: 'succces',
+        data: reduce(
+          groupBy(docs, 'date'),
+          (result, value, key) => {
+            result = [
+              ...result,
+              {
+                title: dayjs(key)
+                  .format('D MMMM'),
+                data: value,
+              },
+            ];
+            return result;
+          },
+          [],
+        ),
       });
     });
 };
